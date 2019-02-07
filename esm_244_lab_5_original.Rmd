@@ -1,0 +1,68 @@
+---
+title: "Lab 5"
+author: "An Bui"
+date: "7 February 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries and data, message = FALSE}
+#### libraries ####
+library(tidyverse)
+library(tseries)
+library(forecast)
+
+#### data ####
+# US residential energy consumption values (Jan 1973 - Oct 2017, trillion BTU)
+energy <- read_csv("energy.csv")
+```
+
+First, create 'ts' time series data using information in the res_total column.
+```{r time series, message = FALSE}
+#### set data as time series ####
+res_ts <- ts(energy$res_total,
+             # monthly data
+             frequency = 12,
+             # start January 1973
+             start = c(1973, 1))
+res_ts
+
+#### plot data against time ####
+plot(res_ts)
+# looks like there's an increasing trend
+# looks additive: highest highs and lowest lows within season remain relatively constant
+```
+
+Now decompose the data.
+```{r decompose, message = FALSE}
+#### decompose function ####
+res_dc <- decompose(res_ts)
+
+#### plot ####
+plot(res_dc)
+# increasing trend
+# seasonality (on scale of 100s, so seasonality is big contributor to patterns observed)
+# no pattern to residuals
+```
+
+There are other ways to visualize the data.
+```{r}
+#### plot months ####
+monthplot(res_ts)
+# breaks down within month how values are changing
+# mean value for each month over the years
+
+#### season plot ####
+ggseasonplot(res_ts)
+# lower orange values are in the 1970s, purple pink values are recent
+# every year has its own series, tells the same story in a different way
+```
+
+
+
+
+
+
