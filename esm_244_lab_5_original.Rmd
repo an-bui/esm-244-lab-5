@@ -49,7 +49,7 @@ plot(res_dc)
 ```
 
 There are other ways to visualize the data.
-```{r}
+```{r other visualizations, message = FALSE}
 #### plot months ####
 monthplot(res_ts)
 # breaks down within month how values are changing
@@ -59,8 +59,45 @@ monthplot(res_ts)
 ggseasonplot(res_ts)
 # lower orange values are in the 1970s, purple pink values are recent
 # every year has its own series, tells the same story in a different way
+
+ggseasonplot(res_ts, polar = TRUE)
+# plot in a circle
 ```
 
+##### 1. Simple moving averages.
+Use `ma()` in `forecast` package.
+```{r moving averages, message = FALSE}
+sma_res <- ma(res_ts,
+              # window size
+              order = 5)
+# first 2 and last 2 observations will get cut because of the number of observations/5
+
+plot(res_ts)
+lines(sma_res, col = "red")
+# run together to get data and moving average
+# looks smooth
+
+sma_res_12 <- ma(res_ts,
+              # window size
+              order = 12)
+plot(sma_res_12)
+# looks even smoother
+
+sma_res_50 <- ma(res_ts,
+              # window size
+              order = 50)
+plot(sma_res_50)
+# even smoother
+```
+Clearly, changing windows changes the way the data appear.
+
+##### 2. Autocorrelation
+```{r acf, message = FALSE}
+res_acf <- acf(res_ts)
+# big peaks every 12 months, which means that things are highly correlated with observations 12 months prior
+# makes sense for energy usage data
+```
+Seasonality is important!
 
 
 
