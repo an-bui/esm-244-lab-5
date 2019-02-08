@@ -96,8 +96,86 @@ Clearly, changing windows changes the way the data appear.
 res_acf <- acf(res_ts)
 # big peaks every 12 months, which means that things are highly correlated with observations 12 months prior
 # makes sense for energy usage data
+
+ggtsdisplay(res_ts)
+# original data, acf, and pacf
 ```
 Seasonality is important!
+
+##### 3. Holt-Winters exponential smoothing
+```{r holt-winters, message = FALSE}
+#### holt-winters ####
+res_hw <- HoltWinters(res_ts)
+res_hw
+plot(res_hw)
+# shows original data in black, model predictions in red
+
+#### forecasting ####
+res_forecast <- forecast(res_hw,
+                         # how many increments to forecast by (60/5 = 12 months)
+                         h = 60)
+plot(res_forecast)
+# slightly downward trend
+
+#### check distribution of residuals ####
+hist(res_forecast$residuals)
+# look normally distributed
+```
+
+##### 4. Autoregressive integrated moving average (ARIMA)
+```{r arima, message = FALSE}
+#### find pdq ####
+res_pdq <- auto.arima(res_ts)
+res_pdq
+# pdq (nonseasonal): 1, 0, 2
+# pdq (seasonal): 0, 1, 1
+
+#### fit ARIMA model using pdq inputs ####
+res_arima <- arima(res_ts,
+                   # give non-seasonal pdq
+                   order = c(1, 0, 2),
+                   # give seasonal pdq as list
+                   seasonal = list(order = c(0, 1, 1)))
+res_arima
+
+#### look at residuals ####
+# set parameters for graphics: populate graphics in 1 row with 2 columns to get graphs side by side
+par(mfrow = c(1, 2))
+hist(res_arima$residuals)
+qqnorm(res_arima$residuals)
+# looks normally distributed ish - not skewed in either direction
+```
+
+##### 5. Forecast with ARIMA outputs.
+```{r forecast, message = FALSE}
+#### forecast ####
+forecast_res <- forecast(res_arima,
+                         # forecast to 72 months
+                         h = 72)
+par(mfrow = c(1, 1))
+plot(forecast_res)
+
+#### graph with ggplot ####
+res_df <- data.frame(forecast_res)
+# row names are months and years
+# point forecast, lower and upper bounds for 80th and 95th % confidence interval
+
+# make a sequence of numbers for months
+month_seq <- seq(1, 72)
+# bind to data frame
+res_df_2 <- data.frame(month_seq, res_df)
+
+ggplot(res_df_2, aes(x = month_seq,
+                     y = Point.Forecast)) +
+  geom_line()
+```
+
+
+
+
+
+
+
 
 
 
